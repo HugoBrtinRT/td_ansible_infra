@@ -1,0 +1,36 @@
+- name: Acte 1 - Récupération de la configuration du CSR1000v
+  # On utilise le nom défini dans ton inventaire (hosts.ini)
+  hosts: csr1000
+  
+  # On passe la récupération des faits pour gagner du temps
+  gather_facts: false
+
+  # On active le mode privilégié (enable) pour le show running-config
+  become: yes
+  become_method: enable
+
+  tasks:
+    - name: Récupère la configuration courante
+      # Module spécifique pour envoyer des commandes à Cisco IOS
+      cisco.ios.ios_command:
+        commands: show running-config
+      # On stocke le résultat dans la variable 'config'
+      register: config
+
+    - name: Enregistre la configuration dans un fichier local
+      # On utilise le module copy pour créer le fichier sur ta VM Ansible
+      ansible.builtin.copy:
+        # On récupère le texte brut de la commande (premier élément de la liste)
+        content: "{{ config.stdout[0] }}"
+        # Le fichier sera nommé show_run_csr1000.txt
+        dest: "show_run_{{ inventory_hostname }}.txt"
+
+    - name: Exemple de boucle (Optionnel - pour ton cours)
+      # Le module debug écrit simplement dans ta console
+      ansible.builtin.debug:
+        msg: "Traitement de l'élément : {{ item }}"
+      # Ta liste d'éléments à traiter
+      loop:
+        - marc
+        - sophie
+        - pierre
